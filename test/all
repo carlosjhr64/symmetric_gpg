@@ -1,0 +1,152 @@
+#!/usr/bin/env ruby
+require 'symmetric_gpg'
+
+PLAIN = 'test/text.txt'
+
+puts "Testing: in_and_out"
+
+puts "\tCopy test"
+
+class Piper < Array
+  def initialize(ioin,ioout)
+    @in, @out = ioin,ioout
+  end
+  def getbyte
+    @in.getbyte
+  end
+  def putc( c )
+    @out.putc c
+  end
+  def close_write
+    # no pipe to close
+  end
+end
+
+def copy_test
+  infile = PLAIN
+  outfile = 'test/text.out'
+  File.unlink(outfile) if File.exist?(outfile)
+  ioin = File.open(infile,'r')
+  ioout = File.open(outfile,'w')
+  pipe = Piper.new(ioin,ioout)
+  SymmetricGPG.in_and_out(ioin,pipe,ioout)
+  ioout.close
+  ioin.close
+  if `diff #{infile} #{outfile}`.length != 0 then
+    puts "Copy test failed"
+    exit
+  end
+end
+copy_test
+
+puts "\tSomething unexpected test"
+
+class Piper
+  def close_write
+    raise 'Crap!'
+  end
+end
+
+begin
+  copy_test
+rescue StandardError
+  if $!.message != 'Crap!' then
+    puts "Unexpected error test failed"
+    exit
+  end
+end
+
+
+puts "Testing: cryptor_io_pipe"
+
+def cryptor_io_pipe_text(type, infile, outfile)
+  ioin = File.open(infile,'r')
+  ioout = File.open(outfile,'w')
+  SymmetricGPG.cryptor_io_pipe(type, 'ez23mr', ioin, ioout)
+  ioout.close
+  ioin.close
+end
+
+encfile = 'test/text.enc'
+File.unlink(encfile) if File.exist?(encfile)
+puts "TODO: Bad CA certificate" # TODO
+cryptor_io_pipe_text(SymmetricGPG::ENCRYPTING,PLAIN,encfile)
+sha1sum0 = `sha1sum test/text.txt`.strip.split(/\s+/).first
+sha1sum1 = `sha1sum test/text.enc`.strip.split(/\s+/).first
+if sha1sum0 == sha1sum1 then
+  # just check the files are different, gpg has nonce.
+  puts  "\tencription failed"
+  exit
+end
+decfile = 'test/text.dec'
+File.unlink(decfile) if File.exist?(decfile)
+cryptor_io_pipe_text(SymmetricGPG::DECRYPTING,encfile,decfile)
+sha1sum2 = `sha1sum test/text.dec`.strip.split(/\s+/).first
+if sha1sum0 != sha1sum2 then
+  # this tests text.txt == text.dec
+  puts "\tencrition/decription test failed"
+  exit
+end
+
+puts "Testing: p2ep and e2pp"
+
+def _2_p_test
+  gpg = SymmetricGPG.new('ez23mr')
+  encfile = 'test/text.enc'
+  File.unlink(encfile) if File.exist?(encfile)
+  ioin = File.open(PLAIN,'r')
+  ioout= File.open(encfile,'w')
+  puts "TODO: Bad CA certificate" # TODO
+  gpg.p2ep(ioin,ioout)
+  ioout.close
+  ioin.close
+  decfile = 'test/text.dec'
+  File.unlink(decfile) if File.exist?(decfile)
+  ioin =  File.open(encfile,'r')
+  ioout= File.open(decfile,'w')
+  gpg.e2pp(ioin,ioout)
+  ioout.close
+  ioin.close
+end
+_2_p_test
+sha1sum2 = `sha1sum test/text.dec`.strip.split(/\s+/).first
+if sha1sum0 != sha1sum2 then
+  puts "\t_2_p_test failed"
+  exit
+end
+
+gpg = SymmetricGPG.new('ez23mr')
+plain = "Hello World"
+encripted = gpg.encstr(plain)
+puts
+puts encripted
+puts
+decripted = gpg.decstr(encripted)
+puts decripted
+puts
+if decripted != plain then
+  "String encstr/decstr failed"
+  exit
+end
+
+gpg = SymmetricGPG.new('ez23mr')
+puts "TODO: Bad CA certificate" # TODO
+encrypted = 'test/text.enc'
+File.unlink(encrypted) if File.exist?(encrypted)
+gpg.encrypt(PLAIN,encrypted)
+
+decrypted = 'test/text.dec'
+File.unlink(decrypted) if File.exist?(decrypted)
+gpg.decrypt(encrypted,decrypted)
+
+sha1sum0 = `sha1sum #{PLAIN}`.strip.split(/\s+/).first
+sha1sum2 = `sha1sum test/text.dec`.strip.split(/\s+/).first
+if sha1sum0 != sha1sum2 then
+  puts "symmetric_gpg.decrypted/encrypted failed"
+  exit
+end
+puts "OK!"
+
+
+
+
