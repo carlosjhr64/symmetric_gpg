@@ -1,5 +1,6 @@
 # A gpg command line wrapper for symmetric encription
 class SymmetricGPG
+  VERSION = '0.0.0'
 
   CRYPTOR = 'gpg -q --batch --passphrase-fd 0'
   ENCRYPTING = '--force-mdc --symmetric'

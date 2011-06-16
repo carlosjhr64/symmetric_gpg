@@ -14,7 +14,7 @@ spec = Gem::Specification.new do |s|
   s.version = version
   s.date = Date.today.to_s
 
-  s.homepage = 'https://sites.google.com/site/carlosjhr64/rubygems/symmetric-gpg'
+  s.homepage = 'https://sites.google.com/site/carlosjhr64/rubygems/symmetricgpg'
 
   s.summary = 'Another gpg (symmetric) wrapper.'
   s.description = <<EOT
