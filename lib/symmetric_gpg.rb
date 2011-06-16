@@ -34,7 +34,7 @@ class SymmetricGPG
   end
 
   def self.cryptor_io_pipe(type,passphrase,ioin,ioout)
-    IO.popen( "#{CRYPTOR} #{type}", 'w+' ){|pipe|
+    IO.popen( "#{CRYPTOR} #{type} 2> /dev/null", 'w+' ){|pipe|
       pipe.puts passphrase
       SymmetricGPG.in_and_out(ioin,pipe,ioout)
     }
@@ -59,7 +59,7 @@ class SymmetricGPG
 
   def self.cryptor_str_pipe(type,passphrase,instring)
     outstring = nil
-    IO.popen( "#{CRYPTOR} #{type}", 'w+' ){|pipe|
+    IO.popen( "#{CRYPTOR} #{type} 2> /dev/null", 'w+' ){|pipe|
       pipe.puts passphrase
       outstring = SymmetricGPG.write_read(instring,pipe)
     }
@@ -80,7 +80,7 @@ class SymmetricGPG
 
   def self.cryptor_files(infile,outfile,passphrase,force,type)
     yes = (force)? '--yes': ''
-    IO.popen( "#{CRYPTOR} #{yes} --output '#{outfile}' #{type} '#{infile}'", 'w' ){|pipe|
+    IO.popen( "#{CRYPTOR} #{yes} --output '#{outfile}' #{type} '#{infile}' 2> /dev/null", 'w' ){|pipe|
       pipe.puts passphrase
       pipe.flush
     }
