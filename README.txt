@@ -1,3 +1,6 @@
+#
+# This software is GPL.
+#
 ### SYNOPSIS ###
 
 require 'symmetric_gpg'
