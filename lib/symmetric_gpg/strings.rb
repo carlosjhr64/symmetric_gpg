@@ -1,9 +1,9 @@
-# A gpg command line wrapper for symmetric encription
-class SymmetricGPG
+# A gpg command line wrapper for symmetric encryption
+module SymmetricGPG
 ###############
 ### STRINGS ###
 ###############
-class Strings
+class Strings < Data
 
   def initialize(*parameters)
     super
@@ -25,11 +25,11 @@ class Strings
   end
 
   def encrypt
-    @encrypted = SymmetricGPG.cryptor_str_pipe(@encrypting,@plain)
+    @encrypted = cryptor_str_pipe(@encrypting)
   end
 
   def decrypt
-    @plain = SymmetricGPG.cryptor_str_pipe(@decrypting,@encrypted)
+    @plain = cryptor_str_pipe(@decrypting)
   end
 
 end

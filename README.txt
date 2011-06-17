@@ -12,45 +12,48 @@
 require 'symmetric_gpg'
 
 # Files Constructor
+# Constructor has to have at least the passphrase.
 files = SymmetricGPG::Files.new('A good passphrase, not this one.')
+# Then set the rest via accessors
 files.plain = 'README.txt'
 files.encrypted = 'README.enc'
+files.force = true # ok to overwrite pre-existing file
+# Encrypt plain to encrypted
+files.encrypt
+# Ok, let's decrypt README.enc
+files.plain = 'README.dec'
+files.decrypt
+# README.dec should be identical to README.txt
+raise "Bad encryption/decryption" if `diff README.dec README.txt`.length != 0
 
-
-
-exit
-
-# FILES...
-# Encript plain file, README.txt, to encripted file, Text.enc.
-sgpg.encrypt('README.txt','Text.enc', true) # true means it's OK to overwrite
-# Decript encripted file, Text.enc, to decripted file, Text.dec.
-sgpg.decrypt('Text.enc','Text.dec', true) # true means it's OK to overwrite
-# Text.dec should be identical to README.txt
-
-# STRINGS...
-plain = "The rain in spain rains mainly in the plane."
-encripted = sgpg.encstr(plain)
-puts
+# Strings Constructor
+strings = SymmetricGPG::Strings.new('Not this one either.')
+strings.plain = 'The rain in spain rains mainly in the plane.'
+encrypted = strings.encrypt
+# Note that the encrypted attribute is also set.
+raise "Bad encrypted attribute" if encrypted != strings.encrypted
+# And it's garbled
 puts "Garbled:"
-puts encripted # garbled text
-puts
-decripted = sgpg.decstr(encripted)
-puts "Plain:"
-puts decripted # "The rain in spain rains mainly in the plane."
-puts
+puts encrypted
+# No cheat, set plain to ":" and decrypt back, see that it works.
+strings.plain = ':'
+puts "Plain#{strings.plain}"
+strings.decrypt
+puts strings.plain
 
-# AND IOS...
-# plain reader io to encripted writter io
-reader = File.open('README.txt','r')
-writer = File.open('Text.enc2','w')
-# "plain to encripted pipe"
-sgpg.p2ep(reader,writer)
-writer.close
-reader.close
-# encripted reader io to plain writter io
-reader = File.open('Text.enc2','r')
-writer = File.open('Text.dec2','w')
-# "encripted to plain pipe"
-sgpg.e2pp(reader,writer)
-writer.close
-reader.close
+
+# IOs Constructor
+# All constructors can set the four main attributes.
+plain = File.open('README.txt','r')
+encrypted = File.open('README.enc2','wb')
+ios = SymmetricGPG::IOs.new('Maybe... nope! Be random.', plain, encrypted, true) # ok to overwrite
+ios.encrypt
+encrypted.close
+plain.close
+# README.enc2 is encrypted.  Now decrypt it back.
+ios.encrypted = File.open('README.enc2','r')
+ios.plain = File.open('README.dec2','2')
+ios.decrypt
+# README.dec2 should be identical to README.txt
+raise "Bad encryption/decryption" if `diff README.dec2 README.txt`.length != 0
+puts "OK!"
