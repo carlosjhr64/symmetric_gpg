@@ -2,7 +2,7 @@ module SymmetricGPG
 ###########
 ### IOS ###
 ###########
-class IOs
+class IOs < Data
 
   def initialize(*parameters)
     super
@@ -37,11 +37,11 @@ class IOs
   end
 
   def encrypt
-    SymmetricGPG.cryptor_io_pipe(@encrypting)
+    cryptor_io_pipe(@encrypting)
   end
 
   def decrypt
-    SymmetricGPG.cryptor_io_pipe(@decrypting)
+    cryptor_io_pipe(@decrypting)
   end
 
 end

@@ -11,7 +11,9 @@
 
 require 'symmetric_gpg'
 
+#
 # Files Constructor
+#
 # Constructor has to have at least the passphrase.
 files = SymmetricGPG::Files.new('A good passphrase, not this one.')
 # Then set the rest via accessors
@@ -26,7 +28,9 @@ files.decrypt
 # README.dec should be identical to README.txt
 raise "Bad encryption/decryption" if `diff README.dec README.txt`.length != 0
 
+#
 # Strings Constructor
+#
 strings = SymmetricGPG::Strings.new('Not this one either.')
 strings.plain = 'The rain in spain rains mainly in the plane.'
 encrypted = strings.encrypt
@@ -42,7 +46,9 @@ strings.decrypt
 puts strings.plain
 
 
+#
 # IOs Constructor
+#
 # All constructors can set the four main attributes.
 plain = File.open('README.txt','r')
 encrypted = File.open('README.enc2','wb')
@@ -52,8 +58,12 @@ encrypted.close
 plain.close
 # README.enc2 is encrypted.  Now decrypt it back.
 ios.encrypted = File.open('README.enc2','r')
-ios.plain = File.open('README.dec2','2')
+ios.plain = File.open('README.dec2','wb')
 ios.decrypt
+ios.plain.close
+ios.encrypted.close
 # README.dec2 should be identical to README.txt
 raise "Bad encryption/decryption" if `diff README.dec2 README.txt`.length != 0
+
 puts "OK!"
+
