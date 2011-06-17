@@ -1,12 +1,24 @@
 #
 # This software is GPL.
 #
-### SYNOPSIS ###
+
+#######################
+#    Version 1.0.0    #
+#      not zero       #
+#######################
+#      SYNOPSIS       #
+#######################
 
 require 'symmetric_gpg'
 
-# Constructor
-sgpg = SymmetricGPG.new('A good passphrase, not this one.')
+# Files Constructor
+files = SymmetricGPG::Files.new('A good passphrase, not this one.')
+files.plain = 'README.txt'
+files.encrypted = 'README.enc'
+
+
+
+exit
 
 # FILES...
 # Encript plain file, README.txt, to encripted file, Text.enc.
