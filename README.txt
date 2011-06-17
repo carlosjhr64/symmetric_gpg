@@ -65,5 +65,12 @@ ios.encrypted.close
 # README.dec2 should be identical to README.txt
 raise "Bad encryption/decryption" if `diff README.dec2 README.txt`.length != 0
 
-puts "OK!"
+# Note that stdin and/or stdout can be used
+File.open('README.enc2','r') do |encrypted|
+  ios.encrypted = encrypted
+  ios.plain = $stdout
+  ios.decrypt
+end
+# And of course you can use StringIO.
 
+puts "OK!"
