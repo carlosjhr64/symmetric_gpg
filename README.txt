@@ -3,9 +3,10 @@
 #
 
 #################################
-#         Version 1.0.0         #
-#           not zero            #
-# gem 'symmetric_gpg', '~> 1.0' #
+#         Version 1.1.0         #
+# Is not zero.                  #
+# Not even exactly one.         #
+# gem 'symmetric_gpg', '~> 1.1' #
 #################################
 #           SYNOPSIS            #
 #################################
@@ -13,11 +14,12 @@
 require 'symmetric_gpg'
 
 #
-# Files Constructor
+# Files
 #
-# Constructor has to have at least the passphrase.
-files = SymmetricGPG::Files.new('A good passphrase, not this one.')
-# Then set the rest via accessors
+# Constructor with no parameters...
+files = SymmetricGPG::Files.new
+# ...needs to have it's parameters set via accessors.
+files.passphrase = 'A good passphrase, not this one.'
 files.plain = 'README.txt'
 files.encrypted = 'README.enc'
 files.force = true # ok to overwrite pre-existing file
@@ -30,8 +32,9 @@ files.decrypt
 raise "Bad encryption/decryption" if `diff README.dec README.txt`.length != 0
 
 #
-# Strings Constructor
+# Strings
 #
+# But it's a good idea to set the passphrase right away.
 strings = SymmetricGPG::Strings.new('Not this one either.')
 strings.plain = 'The rain in spain rains mainly in the plane.'
 encrypted = strings.encrypt
@@ -48,11 +51,11 @@ puts strings.plain
 
 
 #
-# IOs Constructor
+# IOs
 #
-# All constructors can set the four main attributes.
 plain = File.open('README.txt','r')
 encrypted = File.open('README.enc2','wb')
+# All constructors can set the four main attributes.
 ios = SymmetricGPG::IOs.new('Maybe... nope! Be random.', plain, encrypted, true) # ok to overwrite
 ios.encrypt
 encrypted.close

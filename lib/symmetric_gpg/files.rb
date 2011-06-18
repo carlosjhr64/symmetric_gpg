@@ -1,8 +1,6 @@
 # A gpg command line wrapper for symmetric encryption
 module SymmetricGPG
-#############
-### FILES ###
-#############
+# Files wraps gpg's classic form "take this file and encript it"
 class Files < Data
 
   def initialize(*parameters)
@@ -10,7 +8,7 @@ class Files < Data
   end
 
   def cryptor_files(type)
-    infile,outfile = (type != @encrypting)? [@encrypted,@plain] : [@plain,@encrypted]
+    infile,outfile = (type == @encrypting)? [@plain,@encrypted] : [@encrypted,@plain]
     yes = (@force)? '--yes': ''
     IO.popen( "#{@cryptor} #{yes} --output '#{outfile}' #{type} '#{infile}' 2> /dev/null", 'w' ){|pipe|
       pipe.puts @passphrase
@@ -20,8 +18,9 @@ class Files < Data
 
   def encrypt
     # validations
-    raise "Plain file is nil or does not exist." if @plain.nil? || !File.exist?(@plain)
-    raise "Encrypted file is nil or exists." if @encrypted.nil? || (!@force && File.exist?(@encrypted))
+    nils!
+    raise "Plain file does not exist." if !File.exist?(@plain)
+    raise "Encrypted file exists." if !@force && File.exist?(@encrypted)
 
     # actions
     cryptor_files(@encrypting)
@@ -34,8 +33,9 @@ class Files < Data
 
   def decrypt
     # validations
-    raise "Encrypted file is nil or does not exist." if @encrypted.nil? || !File.exist?(@encrypted)
-    raise "Plain file is nil or exists." if @plain.nil? || (!@force && File.exist?(@plain))
+    nils!
+    raise "Encrypted file is nil or does not exist." if !File.exist?(@encrypted)
+    raise "Plain file is nil or exists." if !@force && File.exist?(@plain)
 
     # action
     cryptor_files(@decrypting)

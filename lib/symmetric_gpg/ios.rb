@@ -1,7 +1,5 @@
 module SymmetricGPG
-###########
-### IOS ###
-###########
+# IOs encrypts/decrypts io streams
 class IOs < Data
 
   def initialize(*parameters)
@@ -37,10 +35,12 @@ class IOs < Data
   end
 
   def encrypt
+    nils!
     cryptor_io_pipe(@encrypting)
   end
 
   def decrypt
+    nils!
     cryptor_io_pipe(@decrypting)
   end
 

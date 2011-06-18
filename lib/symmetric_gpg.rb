@@ -1,18 +1,31 @@
 # A gpg command line wrapper for symmetric encryption
 module SymmetricGPG
-  VERSION = '1.0.0'
+  VERSION = '1.1.0'
 
   CRYPTOR = 'gpg -q --batch --passphrase-fd 0'
   ENCRYPTING = '--force-mdc --symmetric'
   DECRYPTING = '--decrypt'
 
+  # Data is to be subclassed.
+  # It just defines the attributes.
   class Data
     attr_accessor :passphrase, :plain, :encrypted, :force
     attr_accessor :cryptor, :encrypting, :decrypting
 
-    def initialize(passphrase,plain=nil,encrypted=nil,force=true)
+    def initialize(passphrase=nil,plain=nil,encrypted=nil,force=true)
       @passphrase, @plain, @encrypted, @force = passphrase, plain, encrypted, force
       @cryptor, @encrypting, @decrypting = CRYPTOR, ENCRYPTING, DECRYPTING
+    end
+
+    def nils?
+      [@passphrase, @plain, @encrypted, @force, @cryptor, @encrypting, @decrypting].each do |attribute|
+        return true if attribute.nil?
+      end
+      return false
+    end
+
+    def nils!
+      raise "missing attribute" if nils?
     end
   end
 
