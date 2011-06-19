@@ -10,10 +10,7 @@ class Strings < Data
   # For Strings, plain and encripted can be found to be nil.
   # nil! in super will then use this version of nil? to raise exceptions.
   def nils?
-    [@passphrase, @force, @cryptor, @encrypting, @decrypting].each do |attribute|
-      return true if attribute.nil?
-    end
-    return false
+    @passphrase.nil?
   end
 
   def self.write_read(instring,pipe)
