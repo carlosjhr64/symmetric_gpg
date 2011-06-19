@@ -1,3 +1,6 @@
+	TODO
+
+	DONE
 
 nil? need not check so much.
 when gpg fails, should raise exception.

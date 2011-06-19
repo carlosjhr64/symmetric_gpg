@@ -6,20 +6,20 @@ class IOs < Data
     super
   end
 
-  def self.in_and_out(ioin,pipe,ioout)
+  def self.in_and_out(ioin,stdin,stdout,ioout)
     error = nil
-    thread = Thread.new{
+    thread = Thread.new do
       begin
         while byte = ioin.getbyte do
-          pipe.putc byte
+          stdin.putc byte
         end
       rescue Exception
         error = $!
       ensure
-        pipe.close_write
+        stdin.close_write
       end
-    }
-    while char = pipe.getbyte do
+    end
+    while char = stdout.getbyte do
       ioout.putc char
     end
     thread.join
@@ -28,20 +28,23 @@ class IOs < Data
 
   def cryptor_io_pipe(type)
     ioin,ioout = (type != @encrypting)? [@encrypted,@plain] : [@plain,@encrypted]
-    IO.popen( "#{CRYPTOR} #{type} 2> /dev/null", 'w+' ){|pipe|
-      pipe.puts @passphrase
-      IOs.in_and_out(ioin,pipe,ioout)
-    }
+    Open3.popen3( "#{CRYPTOR} #{type}") do |stdin,stdout,stderr|
+      stdin.puts @passphrase
+      IOs.in_and_out(ioin,stdin,stdout,ioout)
+      read_errors(stderr)
+    end
   end
 
   def encrypt
     nils!
     cryptor_io_pipe(@encrypting)
+    @errors.nil?
   end
 
   def decrypt
     nils!
     cryptor_io_pipe(@decrypting)
+    @errors.nil?
   end
 
 end

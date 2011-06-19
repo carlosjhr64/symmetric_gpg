@@ -13,17 +13,18 @@ class Strings < Data
     @passphrase.nil?
   end
 
-  def self.write_read(instring,pipe)
-    Thread.new{ pipe.write instring; pipe.close_write }
-    pipe.read
+  def self.write_read(instring,stdin,stdout)
+    Thread.new{ stdin.write instring; stdin.close_write }
+    stdout.read
   end
 
   def cryptor_str_pipe(type)
     instring = (type != @encrypting)? @encrypted : @plain
     outstring = nil
-    IO.popen( "#{CRYPTOR} #{type} 2> /dev/null", 'w+' ){|pipe|
-      pipe.puts @passphrase
-      outstring = Strings.write_read(instring,pipe)
+    Open3.popen3( "#{CRYPTOR} #{type}" ){|stdin,stdout,stderr|
+      stdin.puts @passphrase
+      outstring = Strings.write_read(instring,stdin,stdout)
+      read_errors(stderr)
     }
     return outstring
   end

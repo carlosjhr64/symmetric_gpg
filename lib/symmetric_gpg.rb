@@ -1,3 +1,5 @@
+require 'open3'
+
 # A gpg command line wrapper for symmetric encryption
 module SymmetricGPG
   VERSION = '1.2.0'
@@ -11,10 +13,12 @@ module SymmetricGPG
   class Data
     attr_accessor :passphrase, :plain, :encrypted, :force
     attr_accessor :cryptor, :encrypting, :decrypting
+    attr_reader :errors
 
     def initialize(passphrase=nil,plain=nil,encrypted=nil,force=true)
       @passphrase, @plain, @encrypted, @force = passphrase, plain, encrypted, force
       @cryptor, @encrypting, @decrypting = CRYPTOR, ENCRYPTING, DECRYPTING
+      @errors = nil
     end
 
     # in version 1.1.0, all attributes where checked, but
@@ -28,6 +32,14 @@ module SymmetricGPG
 
     def nils!
       raise "missing attribute" if nils?
+    end
+
+    def read_errors(stderr)
+      errors = nil
+      while line = stderr.gets do
+        errors = (errors)? errors + line : line
+      end
+      @errors = errors
     end
   end
 
