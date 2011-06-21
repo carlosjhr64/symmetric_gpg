@@ -1,7 +1,14 @@
 # A gpg command line wrapper for symmetric encryption
 module SymmetricGPG
-# Files wraps gpg's classic form "take this file and encript it"
+# Files wraps gpg's classic form "take this file and encrypt it"
 class Files < Data
+  PNE = "Plain does not exist."
+  PNC = "Plain not created."
+  PE  = "Plain exists."
+  ENE = "Encrypted does not exist."
+  ENC = "Encrypted not created."
+  EE  = "Encrypted exists."
+
 
   def initialize(*parameters)
    super
@@ -16,17 +23,62 @@ class Files < Data
     }
   end
 
+  protected
+
+  # If you see the Shreds class, you'll see why these were broken out.
+  def _encrypt
+    cryptor_files(@encrypting)
+  end
+
+  def _decrypt
+    cryptor_files(@decrypting)
+  end
+
+  def _encrypted_exist?
+    File.exist?(@encrypted)
+  end
+
+  def _plain_exist?
+    File.exist?(@plain)
+  end
+
+  def _plain_not_exist
+    raise PNE if !_plain_exist?
+  end
+
+  def _encrypted_exist
+    raise EE if !@force && _encrypted_exist?
+  end
+
+  def _encrypted_not_created
+    raise ENC if !_encrypted_exist?
+  end
+
+  def _encrypted_not_exist
+    raise ENE if !_encrypted_exist?
+  end
+
+  def _plain_exist
+    raise PE if !@force && _plain_exist?
+  end
+
+  def _plain_not_created
+    raise PNC if !_plain_exist?
+  end
+
+  public
+
   def encrypt
     # validations
     nils!
-    raise "Plain file does not exist." if !File.exist?(@plain)
-    raise "Encrypted file exists." if !@force && File.exist?(@encrypted)
+    _plain_not_exist
+    _encrypted_exist
 
     # actions
-    cryptor_files(@encrypting)
+    _encrypt
 
     # confirmation
-    raise "Encrypted file not created." if !File.exist?(@encrypted)
+    _encrypted_not_created
     @errors.nil?
   end
   alias enc encrypt
@@ -34,14 +86,14 @@ class Files < Data
   def decrypt
     # validations
     nils!
-    raise "Encrypted file does not exist." if !File.exist?(@encrypted)
-    raise "Plain file exists." if !@force && File.exist?(@plain)
+    _encrypted_not_exist
+    _plain_exist
 
     # action
-    cryptor_files(@decrypting)
+    _decrypt
 
     # confirmation
-    raise "Plain file not created." if !File.exist?(@plain)
+    _plain_not_created
     @errors.nil?
   end
   alias dec decrypt
