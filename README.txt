@@ -3,21 +3,25 @@
 #
 
 #################################
-#         Version 1.2.0         #
+#         Version 1.3.0         #
 # Is not zero.                  #
-# Should have been 2?  :-??     #
-# gem 'symmetric_gpg', '~> 1.2' #
+# It's one with mo' features.   #
+# gem 'symmetric_gpg', '~> 1.3' #
 #################################
 #           SYNOPSIS            #
 #################################
 #
-# New in this version is the :errors attribute, and
-# the use of Open3.
-# GPG's stderr is read and stored in @errors.
-# SymmetricGPG will raise StandardError with most common failures, but
-# sometimes the pipe runs successfully with warnings or errors from gpg.
-# It's not always obvious if a successful pipe means lack of failure, and
-# one should look at the errors given.
+# New in this version is SymmetricGPG::Shreds,
+# which uses Shredder:
+#    https://rubygems.org/gems/shredder
+# Works like SymmetricGPG::Files, described below, but
+# is constructed and used as follows:
+#   shreds = SymmetricGPG::Shreds.new( passphrase, sew, [shred1,shred2,...] )
+#   shreds.encrypt # encrypts sew into shreds shred1,shred2,...
+#   shreds.decrypt # decrypts shreds shred1,shred2,... into sew.
+# See:
+#    https://sites.google.com/site/carlosjhr64/rubygems/symmetricgpg
+# for an example utility, gpg_shredder.
 #
 
 require 'symmetric_gpg'
