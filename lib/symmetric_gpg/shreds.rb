@@ -26,14 +26,14 @@ class Shreds < Files
 
   def _encrypt
     shreds = @encrypted.join("' '")
-    Open3.popen3( "#{@cryptor} #{@encrypting} | #{@shredder} #{@shredding} '#{shreds}'"){|stdin,stdout,stderr|
+    yes = (@force)? '--yes': '' # Note: shredder 0.2.0 ignores this.
+    Open3.popen3( "#{@cryptor} #{@encrypting} | #{@shredder} #{yes} #{@shredding} '#{shreds}'"){|stdin,stdout,stderr|
       stdin.puts @passphrase
       stdin.write File.read(@plain)
       stdin.close_write
       read_errors(stderr)
     }
   end
-  alias shred _encrypt
 
   def _decrypt
     shreds = @encrypted.join("' '")
@@ -43,9 +43,29 @@ class Shreds < Files
       read_errors(stderr)
     }
   end
-  alias sew _decrypt
 
-  public :sew, :shred
+  public # I could have refactor these, but it does get to the point where it's unreadable, don't you think?
+
+  def shred
+    shreds = @encrypted.join("' '")
+    Open3.popen3( "#{@cryptor} #{@encrypting} | #{@shredder} #{@shredding} '#{shreds}'"){|stdin,stdout,stderr|
+      stdin.puts @passphrase
+      stdin.write @plain
+      stdin.close_write
+      read_errors(stderr)
+    }
+  end
+
+  def sew
+    shreds = @encrypted.join("' '")
+    yes = (@force)? '--yes': ''
+    Open3.popen3( "#{@shredder} #{@sewing} '#{shreds}' | #{@cryptor} #{yes} #{@decrypting}"){|stdin,stdout,stderr|
+      stdin.puts @passphrase
+      @plain = stdout.read
+      read_errors(stderr)
+    }
+    return @plain
+  end
 
 end
 end

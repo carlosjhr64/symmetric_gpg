@@ -3,26 +3,31 @@
 #
 
 #################################
-#         Version 1.3.0         #
-# Is not zero.                  #
-# It's one with mo' features.   #
-# gem 'symmetric_gpg', '~> 1.3' #
+#         Version 2.0.0         #
+#     brutally hacks 1.3.0      #
+# gem 'symmetric_gpg', '~> 2.0' #
 #################################
 #           SYNOPSIS            #
 #################################
 #
-# New in this version is SymmetricGPG::Shreds,
+# New in version 1.3 was SymmetricGPG::Shreds,
 # which uses Shredder:
 #    https://rubygems.org/gems/shredder
 # Works like SymmetricGPG::Files, described below, but
 # is constructed and used as follows:
-#   shreds = SymmetricGPG::Shreds.new( passphrase, sew, [shred1,shred2,...] )
+#   shreds = SymmetricGPG::Shreds.new( passphrase, sew, [shred1,shred2,...] ) # where sew is a filename.
 #   shreds.encrypt # encrypts sew into shreds shred1,shred2,...
 #   shreds.decrypt # decrypts shreds shred1,shred2,... into sew.
 # See:
 #    https://sites.google.com/site/carlosjhr64/rubygems/symmetricgpg
 # for an example utility, gpg_shredder.
-#
+# Version 2.0 adds ways to get and put strings from and into shreds.
+#    shreds = SymmetricGPG::Shreds.new( passphrase, sew, [shred1,shred2,...] ) # where sew is "a given string".
+#    # Note that these below breaks previous api, thus the major version jump.
+#    shreds.shred
+#    sew = shreds.sew
+# The distinction of sew as a String instead of a filename is made by the choice of methods.
+# As a filename, it's #encrypt and #decrypt.  As a string it's #shred and #sew.
 
 require 'symmetric_gpg'
 
@@ -113,5 +118,14 @@ File.open('README.enc2','r') do |encrypted|
   ios.decrypt
 end
 # And of course you can use StringIO.
-
 puts "OK!"
+
+# # If you have shredder, you can try this:
+# require 'symmetric_gpg'
+# string = "A is for Apple."
+# shreds = SymmetricGPG::Shreds.new("Shreddelicious!", string, ['shred.1','shred.2'])
+# shreds.shred # Should encrypt and then shred the string into shred.1 and shred.2.
+# shreds.plain = nil # no cheat!
+# plain = shreds.sew # should get the shredded string back.
+# raise "No... I did not the the string back." if !(plain == string)
+# puts plain
