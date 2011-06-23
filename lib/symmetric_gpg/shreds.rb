@@ -24,46 +24,43 @@ class Shreds < Files
     @encrypted.inject(false){|boolean,shred| boolean || File.exist?(shred)}
   end
 
-  def _encrypt
+  def _enc
     shreds = @encrypted.join("' '")
     yes = (@force)? '--yes': '' # Note: shredder 0.2.0 ignores this.
     Open3.popen3( "#{@cryptor} #{@encrypting} | #{@shredder} #{yes} #{@shredding} '#{shreds}'"){|stdin,stdout,stderr|
       stdin.puts @passphrase
-      stdin.write File.read(@plain)
+      stdin.write yield
       stdin.close_write
+      read_errors(stderr)
+    }
+  end
+
+  def _encrypt
+    _enc{ File.read(@plain) }
+  end
+
+  def _dec(output='')
+    shreds = @encrypted.join("' '")
+    yes = (@force)? '--yes': ''
+    Open3.popen3( "#{@shredder} #{@sewing} '#{shreds}' | #{@cryptor} #{yes} #{output} #{@decrypting}"){|stdin,stdout,stderr|
+      stdin.puts @passphrase
+      yield(stdout) if block_given?
       read_errors(stderr)
     }
   end
 
   def _decrypt
-    shreds = @encrypted.join("' '")
-    yes = (@force)? '--yes': ''
-    Open3.popen3( "#{@shredder} #{@sewing} '#{shreds}' | #{@cryptor} #{yes} --output '#{@plain}' #{@decrypting}"){|stdin,stdout,stderr|
-      stdin.puts @passphrase
-      read_errors(stderr)
-    }
+    _dec("--output '#{@plain}'")
   end
 
-  public # I could have refactor these, but it does get to the point where it's unreadable, don't you think?
+  public
 
   def shred
-    shreds = @encrypted.join("' '")
-    Open3.popen3( "#{@cryptor} #{@encrypting} | #{@shredder} #{@shredding} '#{shreds}'"){|stdin,stdout,stderr|
-      stdin.puts @passphrase
-      stdin.write @plain
-      stdin.close_write
-      read_errors(stderr)
-    }
+    _enc{ @plain }
   end
 
   def sew
-    shreds = @encrypted.join("' '")
-    yes = (@force)? '--yes': ''
-    Open3.popen3( "#{@shredder} #{@sewing} '#{shreds}' | #{@cryptor} #{yes} #{@decrypting}"){|stdin,stdout,stderr|
-      stdin.puts @passphrase
-      @plain = stdout.read
-      read_errors(stderr)
-    }
+    _dec{|stdout| @plain = stdout.read }
     return @plain
   end
 
