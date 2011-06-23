@@ -2,7 +2,7 @@ require 'open3'
 
 # A gpg command line wrapper for symmetric encryption
 module SymmetricGPG
-  VERSION = '1.4.0'
+  VERSION = '2.0.1'
 
   CRYPTOR = 'gpg -q --batch --passphrase-fd 0'
   ENCRYPTING = '--force-mdc --symmetric'
